@@ -3,6 +3,7 @@ package com.tuiki.productservice.controller;
 import com.tuiki.productservice.domain.Category;
 import com.tuiki.productservice.exception.CategoryNotFoundException;
 import com.tuiki.productservice.exception.CategoryValidationException;
+import com.tuiki.productservice.exception.InvalidOperationException;
 import com.tuiki.productservice.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,11 +29,11 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Integer id) {
+    public ResponseEntity<Object> getCategoryById(@PathVariable Integer id) {
         try {
             return ResponseEntity.ok(categoryService.getCategoryById(id));
         } catch (CategoryNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -50,19 +51,22 @@ public class CategoryController {
         try {
             return ResponseEntity.ok(categoryService.updateCategory(id, category));
         } catch (CategoryNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (CategoryValidationException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {
+    public ResponseEntity<Object> deleteCategory(@PathVariable Integer id) {
         try {
             categoryService.deleteCategory(id);
             return ResponseEntity.noContent().build();
         } catch (CategoryNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (InvalidOperationException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 }

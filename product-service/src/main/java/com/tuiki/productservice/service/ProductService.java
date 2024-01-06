@@ -3,8 +3,8 @@ package com.tuiki.productservice.service;
 import com.tuiki.productservice.domain.Product;
 import com.tuiki.productservice.exception.ProductNotFoundException;
 import com.tuiki.productservice.exception.ProductValidationException;
-import com.tuiki.productservice.repository.CategoryRepository;
 import com.tuiki.productservice.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -14,11 +14,10 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    @Autowired
+    public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
     }
 
     public Product createProduct(Product product) {
@@ -43,7 +42,6 @@ public class ProductService {
         existingProduct.setName(product.getName());
         existingProduct.setDescription(product.getDescription());
         existingProduct.setPrice(product.getPrice());
-        existingProduct.setCategory(product.getCategory());
 
         return productRepository.save(existingProduct);
     }
@@ -72,20 +70,12 @@ public class ProductService {
             throw new ProductValidationException("La cantidad no debe estar vacía");
         }
 
-        if (ObjectUtils.isEmpty(product.getCategory())) {
-            throw new ProductValidationException("La categoría no debe estar vacía");
-        }
-
         if (product.getPrice() <= 0) {
             throw new ProductValidationException("El precio debe ser un número positivo");
         }
 
         if (product.getQuantity() < 0) {
             throw new ProductValidationException("La cantidad debe ser un número positivo o cero");
-        }
-
-        if (!categoryRepository.existsById(product.getCategory().getId())) {
-            throw new ProductValidationException("La categoría no existe");
         }
     }
 }

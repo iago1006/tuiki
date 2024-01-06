@@ -3,6 +3,7 @@ package com.tuiki.productservice.service;
 import com.tuiki.productservice.domain.Category;
 import com.tuiki.productservice.exception.CategoryNotFoundException;
 import com.tuiki.productservice.exception.CategoryValidationException;
+import com.tuiki.productservice.exception.InvalidOperationException;
 import com.tuiki.productservice.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -44,9 +45,13 @@ public class CategoryService {
     }
 
     public void deleteCategory(Integer id) {
-        if (!categoryRepository.existsById(id)) {
-            throw new CategoryNotFoundException(id);
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
+
+        if (!category.getProducts().isEmpty()) {
+            throw new InvalidOperationException("Cannot delete category with associated products");
         }
+
         categoryRepository.deleteById(id);
     }
 
